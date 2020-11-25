@@ -26,8 +26,14 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#import "PLCrashReporter.h"
+#if __has_include(<CrashReporter/CrashReporter.h>) \
+    && __has_include(<CrashReporter/PLCrashReporter.h>)
+#import <CrashReporter/CrashReporter.h>
+#import <CrashReporter/PLCrashReporter.h>
+#else
 #import "CrashReporter.h"
+#import "PLCrashReporter.h"
+#endif
 
 #import "PLCrashFeatureConfig.h"
 
@@ -583,8 +589,8 @@ static PLCrashReporter *sharedReporter = nil;
     plcrash_log_writer_init(&signal_handler_context.writer, _applicationIdentifier, _applicationVersion, _applicationMarketingVersion, [self mapToAsyncSymbolicationStrategy: _config.symbolicationStrategy], false);
 
     /* Set custom data, if already set before enabling */
-    if (self.customData != nil) {
-        plcrash_log_writer_set_custom_data(&signal_handler_context.writer, self.customData);
+    if (self.customDataInfo != nil) {
+        plcrash_log_writer_set_custom_data(&signal_handler_context.writer, self.customDataInfo);
     }
 
     /* Enable the signal handler */
@@ -711,8 +717,8 @@ static plcrash_error_t plcr_live_report_callback (plcrash_async_thread_state_t *
     plcrash_async_file_init(&file, fd, MAX_REPORT_BYTES);
 
     /* Set custom data, if already set before enabling */
-    if (self.customData != nil) {
-        plcrash_log_writer_set_custom_data(&writer, self.customData);
+    if (self.customDataInfo != nil) {
+        plcrash_log_writer_set_custom_data(&writer, self.customDataInfo);
     }
     
     /* Mock up a SIGTRAP-based signal info */
@@ -836,7 +842,7 @@ cleanup:
  * @param customData A string with the custom data to save.
  */
 - (void) setCustomData: (NSData *) customData {
-    _customData = customData;
+    _customDataInfo = customData;
     plcrash_log_writer_set_custom_data(&signal_handler_context.writer, customData);
 }
 
